@@ -1,164 +1,395 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Snack Tracker</title>
-<style>
-:root{--bg:#f4efe3;--black:#050505;--white:#fff;--green:#118c2b;--yellow:#ffd21f;--red:#f01822}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);font-family:Arial,Helvetica,sans-serif;padding:18px;color:#050505}
-.app{max-width:1220px;margin:0 auto;background:#fff;border:6px solid #000;display:grid;grid-template-columns:270px 1fr;min-height:900px}
-.sidebar{background:#000;color:#fff;padding:34px 28px}
-.logo{display:flex;justify-content:space-between;margin-bottom:22px}
-.logo h1{font-size:38px;line-height:.95;font-weight:950;text-transform:uppercase}
-.cube{width:42px;height:42px;border:4px solid #fff;transform:rotate(45deg);margin-top:5px}
-.subtitle{font-size:15px;line-height:1.45;text-transform:uppercase;margin-bottom:36px}
-.nav button{width:100%;border:0;background:#000;color:#fff;text-align:left;padding:17px 15px;margin:7px 0;font-size:16px;font-weight:900;cursor:pointer}
-.nav button.active{background:white;color:black;border-radius:3px}
-.main{padding:30px}.view{display:none}.view.active{display:block}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:3px solid #000;margin-bottom:26px}
-.stat{text-align:center;border-right:2px solid #aaa;padding:22px 8px 26px}.stat:last-child{border-right:0}
-.stat strong{display:block;font-size:52px;font-weight:950}.stat span{font-size:14px;font-weight:950;text-transform:uppercase}
-.red{color:var(--red)}.yellow{color:#e2b900}.green{color:var(--green)}
-.title-row{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:22px}
-.title-row h2{font-size:28px;font-weight:950;text-transform:uppercase}.last{font-size:13px;color:#555;font-weight:800}
-.machine-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:30px}
-.machine-card{border:3px solid #000;padding:18px;min-height:250px;position:relative;cursor:pointer;background:#fff;color:#000;transition:.18s}
-.machine-card:hover{transform:translateY(-2px);box-shadow:5px 5px 0 #111}
-.machine-card.active{background:#000;color:#fff;box-shadow:none}.machine-card.active small,.machine-card.active .items{color:#fff}
-.machine-card h3{font-size:25px;font-weight:950;margin-bottom:3px}.machine-card small{display:block;color:#555;margin-bottom:7px}
-.badge{display:inline-block;padding:5px 9px;border:2px solid #000;font-size:13px;font-weight:950;text-transform:uppercase;margin:6px 5px 10px 0}
-.badge.low{background:var(--yellow);color:#000}.badge.out{background:var(--red);color:#fff}.badge.stocked{background:var(--green);color:#fff}
-.items{border-top:2px solid #777;margin-top:4px;padding-top:12px;font-family:"Courier New",monospace;font-size:14px;line-height:1.45}
-.item-row{display:grid;grid-template-columns:1fr 58px 44px;gap:8px;align-items:center}
-.stock-square{display:inline-block;width:10px;height:10px;margin-right:4px;border:1px solid #000;background:#111}
-.sq-red{background:var(--red)}.sq-yellow{background:var(--yellow)}.sq-black{background:#111}.machine-card.active .sq-black{background:#fff}.machine-card.active .stock-square{border-color:#fff}
-.recent-title{font-size:28px;font-weight:950;text-transform:uppercase;border-bottom:3px solid #000;padding-bottom:10px;margin-bottom:18px}
-table{width:100%;border-collapse:collapse;border:3px solid #000;font-family:"Courier New",monospace}
-th{background:#000;color:#fff;padding:12px;text-align:left;font-family:Arial,Helvetica,sans-serif;font-size:13px;text-transform:uppercase}
-td{padding:11px;border-top:1.8px solid #333;font-size:14px}
-.footer{display:grid;grid-template-columns:repeat(3,1fr);border-top:3px solid #999;margin-top:34px;padding-top:22px;font-weight:900;text-transform:uppercase}
-.footer div{text-align:center}.footer span{display:block;margin-top:8px;font-size:18px}
-.report-wrap,.success-wrap{max-width:610px;margin:0 auto;border:6px solid #000;border-radius:36px;overflow:hidden;background:#fff}
-.report-head,.success-head{background:#000;color:#fff;padding:38px}.report-head h2,.success-head h2{font-size:42px;line-height:.9;font-weight:950;text-transform:uppercase}.report-head p,.success-head p{margin-top:16px;font-size:16px;text-transform:uppercase}
-.report-body{padding:34px}.report-title{font-size:28px;font-weight:950;border-bottom:4px solid #000;padding-bottom:13px;margin-bottom:26px;text-transform:uppercase}
-label{display:block;margin:20px 0 9px;font-weight:950;text-transform:uppercase}
-select,input{width:100%;border:2.5px solid #000;padding:15px;font-size:18px;background:#fff}
-.product-preview{border:2.5px solid #000;margin-top:12px;padding:14px;font-family:"Courier New",monospace;background:#f7f7f7}
-.status-btn{width:100%;padding:17px;border:3px solid #000;margin-bottom:10px;font-size:20px;font-weight:950;text-transform:uppercase;cursor:pointer}
-.status-btn.selected{outline:5px solid #000;outline-offset:3px}.stocked-btn{background:var(--green);color:#fff}.low-btn{background:var(--yellow)}.out-btn{background:var(--red);color:#fff}
-.submit,.back-btn{width:100%;padding:20px;background:#000;color:#fff;border:0;margin-top:25px;font-size:20px;font-weight:950;text-transform:uppercase;cursor:pointer}
-.success-body{padding:42px;text-align:center}.success-icon{width:95px;height:95px;border:5px solid var(--green);border-radius:50%;margin:0 auto 22px;display:flex;align-items:center;justify-content:center;color:var(--green);font-size:60px;font-weight:950}
-.success-body h2{font-size:24px;text-transform:uppercase;margin-bottom:14px}.success-body p{line-height:1.5;margin-bottom:22px}
-.success-card{text-align:left;border:2px solid #777;padding:18px;margin:22px 0 28px;font-size:16px;line-height:2}.success-card strong{display:block;text-transform:uppercase;margin-bottom:8px}
-@media(max-width:950px){.app{grid-template-columns:1fr}.machine-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
-</style>
-</head>
-<body>
-<div class="app">
-<aside class="sidebar">
-  <div class="logo"><h1>Snack<br>Tracker</h1><div class="cube"></div></div>
-  <div class="subtitle">Real-time vending<br>machine inventory<br>system</div>
-  <div class="nav">
-    <button class="active" data-view="dashboard">▦ Dashboard</button>
-    <button data-view="report">✎ Report Status</button>
-    <button data-view="dashboard">ⓘ About</button>
-  </div>
-</aside>
-<main class="main">
-<section id="dashboard" class="view active">
-  <div class="stats">
-    <div class="stat"><strong>4</strong><span>Machines Online</span></div>
-    <div class="stat"><strong id="productLines">16</strong><span>Product Lines</span></div>
-    <div class="stat"><strong id="outStockCount" class="red">1</strong><span>Out of Stock</span></div>
-    <div class="stat"><strong id="lowStockCount" class="yellow">4</strong><span>Low Stock</span></div>
-  </div>
-  <div class="title-row"><h2>◈ Machine Status</h2><div class="last">Last updated: <span id="lastUpdated"></span></div></div>
-  <div class="machine-grid" id="machineGrid"></div>
-  <div class="recent-title">↗ Recent Product Updates <span id="filterLabel" style="font-size:16px;color:#555;"></span></div>
-  <table><thead><tr><th>Timestamp</th><th>Machine</th><th>Product</th><th>Status</th></tr></thead><tbody id="purchaseBody"></tbody></table>
-  <div class="footer"><div>System Status<span class="green">Operational</span></div><div>Last Sync<span id="lastSync"></span></div><div>Refresh Rate<span class="green">Live</span></div></div>
-</section>
-<section id="report" class="view">
-  <div class="report-wrap">
-    <div class="report-head"><h2>Snack<br>Tracker</h2><p>Help keep our campus informed</p></div>
-    <div class="report-body">
-      <div class="report-title">✎ Report Machine Status</div>
-      <label>Select Machine Location</label><select id="machineSelect"></select>
-      <label>Select Product</label><select id="productSelect"></select>
-      <div class="product-preview" id="productPreview"></div>
-      <label>Update Product Status</label>
-      <button class="status-btn stocked-btn selected" data-status="Stocked">✓ Stocked</button>
-      <button class="status-btn low-btn" data-status="Low Stock">! Low on Items</button>
-      <button class="status-btn out-btn" data-status="Out of Stock">× Out of Stock</button>
-      <label>Add Note Optional</label><input id="note" placeholder="e.g. Kit Kat is almost empty">
-      <button class="submit" id="submitBtn">Submit Product Update</button>
-    </div>
-  </div>
-</section>
-<section id="success" class="view">
-  <div class="success-wrap">
-    <div class="success-head"><h2>Snack<br>Tracker</h2><p>Help keep our campus informed</p></div>
-    <div class="success-body">
-      <div class="success-icon">✓</div>
-      <h2>Update Submitted!</h2>
-      <p>Thank you for helping<br>keep our campus informed.</p>
-      <div class="success-card">
-        <strong>Your Update</strong>
-        📍 <span id="successLocation"></span><br>
-        ◈ <span id="successMachine"></span><br>
-        🟡 <span id="successProduct"></span><br>
-        🕒 <span id="successTime"></span>
-      </div>
-      <button class="back-btn" id="backBtn">Back to Dashboard</button>
-    </div>
-  </div>
-</section>
-</main>
-</div>
-<script>
-const machines=[
-{id:"ENG-01",location:"Engineering Building",lastRefill:"2026-05-30",items:[{name:"Doritos Cool Ranch",price:"$2.50",stock:3,total:15},{name:"Snickers Bar",price:"$1.75",stock:12,total:15},{name:"Coca-Cola",price:"$2.00",stock:8,total:20},{name:"Red Bull",price:"$3.50",stock:15,total:15}]},
-{id:"SU-02",location:"Student Union",lastRefill:"2026-05-31",items:[{name:"Lays Classic",price:"$2.50",stock:2,total:15},{name:"Kit Kat",price:"$1.75",stock:1,total:15},{name:"Gatorade Blue",price:"$2.25",stock:10,total:20},{name:"Pringles Original",price:"$2.75",stock:14,total:15}]},
-{id:"LIB-03",location:"Library 2nd Floor",lastRefill:"2026-06-01",items:[{name:"Cheetos Flamin Hot",price:"$2.50",stock:13,total:15},{name:"Twix",price:"$1.75",stock:15,total:15},{name:"Sprite",price:"$2.00",stock:7,total:20},{name:"Monster Energy",price:"$3.50",stock:4,total:15}]},
-{id:"ATH-04",location:"Athletic Center",lastRefill:"2026-05-29",items:[{name:"Protein Bar Chocolate",price:"$3.25",stock:0,total:12},{name:"Clif Bar Peanut Butter",price:"$3.00",stock:1,total:12},{name:"Vitamin Water",price:"$2.50",stock:11,total:20},{name:"Powerade Red",price:"$2.25",stock:8,total:20}]}
-];
-let updates=[{time:"2026-06-01 14:23",machine:"ENG-01",product:"Doritos Cool Ranch",status:"Low Stock"},{time:"2026-06-01 14:15",machine:"SU-02",product:"Kit Kat",status:"Out of Stock"},{time:"2026-06-01 13:47",machine:"LIB-03",product:"Monster Energy",status:"Low Stock"},{time:"2026-06-01 13:22",machine:"ATH-04",product:"Clif Bar Peanut Butter",status:"Low Stock"}];
-let selectedStatus="Stocked", selectedMachine="ENG-01";
-function nowString(){return new Date().toLocaleString([], {year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"});}
-function productStatus(item){if(item.stock===0)return"Out of Stock"; if(item.stock<=4)return"Low Stock"; return"Stocked";}
-function stockColour(item){if(item.stock===0)return"sq-red"; if(item.stock<=4)return"sq-yellow"; return"sq-black";}
-function badges(m){const out=m.items.filter(i=>i.stock===0).length;const low=m.items.filter(i=>i.stock>0&&i.stock<=4).length;return `${out?`<span class="badge out">${out} Out</span>`:""}${low?`<span class="badge low">${low} Low</span>`:""}${!out&&!low?`<span class="badge stocked">Stocked</span>`:""}`;}
-function showView(id){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById(id).classList.add("active");}
-function machineOptions(){document.getElementById("machineSelect").innerHTML=machines.map(m=>`<option value="${m.id}">${m.location} — ${m.id}</option>`).join("");}
-function productOptions(){const m=machines.find(x=>x.id===document.getElementById("machineSelect").value);document.getElementById("productSelect").innerHTML=m.items.map((i,idx)=>`<option value="${idx}">${i.name}</option>`).join("");updatePreview();}
-function updatePreview(){const m=machines.find(x=>x.id===document.getElementById("machineSelect").value);const item=m.items[document.getElementById("productSelect").value||0];document.getElementById("productPreview").innerHTML=`Current item: <b>${item.name}</b><br>Price: ${item.price}<br>Current stock: ${item.stock}/${item.total}<br>Status: <b>${productStatus(item)}</b>`;}
-function render(){
-document.getElementById("machineGrid").innerHTML=machines.map(m=>`<div class="machine-card ${m.id===selectedMachine?"active":""}" data-machine="${m.id}"><h3>${m.id}</h3><small>${m.location}</small><small>LAST REFILL: ${m.lastRefill}</small>${badges(m)}<div class="items">${m.items.map(i=>`<div class="item-row"><span>${i.name}</span><span>${i.price}</span><span><i class="stock-square ${stockColour(i)}"></i>${i.stock}/${i.total}</span></div>`).join("")}</div></div>`).join("");
-document.querySelectorAll(".machine-card").forEach(card=>card.onclick=()=>{selectedMachine=card.dataset.machine;document.getElementById("machineSelect").value=selectedMachine;productOptions();render();});
-const filtered=updates.filter(u=>u.machine===selectedMachine);document.getElementById("filterLabel").textContent=`— ${selectedMachine}`;
-document.getElementById("purchaseBody").innerHTML=filtered.map(u=>`<tr><td>${u.time}</td><td>${u.machine}</td><td>${u.product}</td><td>${u.status}</td></tr>`).join("");
-document.getElementById("productLines").textContent=machines.reduce((s,m)=>s+m.items.length,0);
-document.getElementById("outStockCount").textContent=machines.reduce((s,m)=>s+m.items.filter(i=>i.stock===0).length,0);
-document.getElementById("lowStockCount").textContent=machines.reduce((s,m)=>s+m.items.filter(i=>i.stock>0&&i.stock<=4).length,0);
-document.getElementById("lastUpdated").textContent=nowString();document.getElementById("lastSync").textContent=nowString();updatePreview();
-}
-document.querySelectorAll(".nav button").forEach(btn=>btn.onclick=()=>{document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");if(btn.dataset.view==="report"){document.getElementById("machineSelect").value=selectedMachine;productOptions();}showView(btn.dataset.view);});
-document.querySelectorAll(".status-btn").forEach(btn=>btn.onclick=()=>{document.querySelectorAll(".status-btn").forEach(b=>b.classList.remove("selected"));btn.classList.add("selected");selectedStatus=btn.dataset.status;});
-document.getElementById("machineSelect").onchange=()=>{selectedMachine=document.getElementById("machineSelect").value;productOptions();render();};
-document.getElementById("productSelect").onchange=updatePreview;
-document.getElementById("submitBtn").onclick=()=>{
-const m=machines.find(x=>x.id===document.getElementById("machineSelect").value);const item=m.items[document.getElementById("productSelect").value];const t=nowString();
-if(selectedStatus==="Stocked") item.stock=Math.max(item.stock,Math.floor(item.total*.75));
-if(selectedStatus==="Low Stock") item.stock=Math.min(item.stock,3);
-if(selectedStatus==="Out of Stock") item.stock=0;
-updates.unshift({time:t,machine:m.id,product:item.name,status:selectedStatus});
-document.getElementById("successLocation").textContent=m.location;document.getElementById("successMachine").textContent=m.id;document.getElementById("successProduct").textContent=item.name+" — "+selectedStatus;document.getElementById("successTime").textContent=t;
-document.getElementById("note").value="";render();showView("success");
-};
-document.getElementById("backBtn").onclick=()=>{document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));document.querySelector('.nav button[data-view="dashboard"]').classList.add("active");showView("dashboard");render();};
-machineOptions();productOptions();render();setInterval(render,30000);
-</script>
-</body>
-</html>
+from pathlib import Path
+import re
+
+src = Path("/mnt/data/snack_tracker_success_page_design.html")
+html = src.read_text(encoding="utf-8")
+
+# Add/override mobile optimizations for the final version
+mobile_final_css = r"""
+    /* Final mobile optimization for QR-code use */
+    .mobile-topbar{
+      display:none;
+    }
+
+    @media(max-width:760px){
+      body{
+        padding:0;
+        background:#fff;
+      }
+
+      .mobile-topbar{
+        display:flex;
+        position:sticky;
+        top:0;
+        z-index:50;
+        background:#000;
+        color:#fff;
+        align-items:center;
+        justify-content:space-between;
+        padding:16px 18px;
+        border-bottom:4px solid #000;
+      }
+
+      .mobile-topbar .mobile-brand{
+        font-size:23px;
+        font-weight:950;
+        text-transform:uppercase;
+        letter-spacing:.3px;
+      }
+
+      .mobile-topbar button{
+        background:#fff;
+        color:#000;
+        border:0;
+        padding:9px 12px;
+        font-size:20px;
+        font-weight:950;
+        cursor:pointer;
+      }
+
+      .app{
+        display:block;
+        border:none;
+        width:100%;
+      }
+
+      .sidebar{
+        display:none;
+        padding:24px 22px;
+      }
+
+      .sidebar.mobile-open{
+        display:block;
+      }
+
+      .logo h1{
+        font-size:38px;
+      }
+
+      .subtitle{
+        font-size:14px;
+        margin:18px 0 24px;
+      }
+
+      .nav{
+        gap:10px;
+      }
+
+      .nav button{
+        font-size:18px;
+        padding:16px 18px;
+      }
+
+      .main{
+        padding:0;
+      }
+
+      .stats{
+        grid-template-columns:1fr 1fr;
+        border-top:none;
+        border-bottom:5px solid #000;
+        margin:0 0 24px;
+      }
+
+      .stat{
+        min-height:125px;
+        padding:24px 8px;
+      }
+
+      .stat strong{
+        font-size:48px;
+      }
+
+      .stat span{
+        font-size:15px;
+      }
+
+      .title-row{
+        margin:0 16px 16px;
+      }
+
+      .title-row h2{
+        font-size:28px;
+      }
+
+      .last{
+        font-size:13px;
+      }
+
+      .hint{
+        margin:0 16px 14px;
+      }
+
+      .machine-grid{
+        margin:0 16px 28px;
+        gap:16px;
+      }
+
+      .machine-card{
+        padding:22px 18px;
+      }
+
+      .machine-card h3{
+        font-size:30px;
+      }
+
+      .machine-card small{
+        font-size:14px;
+      }
+
+      .items{
+        font-size:15px;
+        line-height:1.55;
+      }
+
+      .item-row{
+        grid-template-columns:1fr auto;
+        padding:6px 0;
+      }
+
+      .item-row span:nth-child(2){
+        grid-column:2;
+      }
+
+      .item-row span:nth-child(3){
+        grid-column:2;
+        font-size:15px;
+      }
+
+      .recent-title{
+        font-size:26px;
+        margin:0 16px 14px;
+      }
+
+      table{
+        display:block;
+        margin:0 16px;
+        width:calc(100% - 32px);
+        border:none;
+        font-family:Arial, Helvetica, sans-serif;
+      }
+
+      thead{
+        display:none;
+      }
+
+      tbody{
+        display:block;
+      }
+
+      tr{
+        display:block;
+        border:3px solid #000;
+        margin-bottom:12px;
+        padding:12px 14px;
+        background:#fff;
+      }
+
+      td{
+        display:flex;
+        justify-content:space-between;
+        gap:14px;
+        border:none;
+        padding:7px 0;
+        font-size:15px;
+        font-family:Arial, Helvetica, sans-serif;
+      }
+
+      td::before{
+        content:attr(data-label);
+        font-weight:950;
+        text-transform:uppercase;
+        color:#000;
+      }
+
+      .footer{
+        margin:28px 16px 24px;
+        grid-template-columns:1fr;
+        gap:16px;
+        text-align:left;
+        border-top:3px solid #000;
+      }
+
+      .footer div{
+        text-align:left;
+        border-bottom:1px solid #ddd;
+        padding-bottom:10px;
+      }
+
+      .footer div:last-child{
+        border-bottom:none;
+      }
+
+      .footer span{
+        font-size:18px;
+      }
+
+      .report-wrap{
+        border:none;
+        border-radius:0;
+        max-width:none;
+      }
+
+      .report-head{
+        padding:34px 22px;
+      }
+
+      .report-head h2{
+        font-size:42px;
+      }
+
+      .report-head p{
+        font-size:14px;
+      }
+
+      .report-body{
+        padding:24px 18px 38px;
+      }
+
+      .report-title{
+        font-size:24px;
+        line-height:1.2;
+      }
+
+      label{
+        font-size:14px;
+      }
+
+      select,input{
+        font-size:16px;
+        padding:14px;
+      }
+
+      .product-preview{
+        font-size:14px;
+        padding:14px;
+      }
+
+      .status-btn{
+        font-size:17px;
+        padding:15px;
+      }
+
+      .submit{
+        font-size:18px;
+        padding:17px;
+      }
+
+      .success-wrap{
+        margin:0;
+        border-radius:0;
+        box-shadow:none;
+      }
+
+      .success-body{
+        padding:40px 18px 38px;
+      }
+
+      .success-icon{
+        width:105px;
+        height:105px;
+        font-size:64px;
+        border-width:8px;
+        margin-bottom:22px;
+      }
+
+      .success-body h2{
+        font-size:30px;
+        margin-bottom:14px;
+      }
+
+      .success-body p{
+        font-size:20px;
+        line-height:1.55;
+        margin-bottom:18px;
+      }
+
+      .success-summary{
+        padding:18px;
+        margin:24px 0 28px;
+        font-size:17px;
+      }
+
+      .success-summary strong{
+        font-size:18px;
+      }
+
+      .success-row{
+        grid-template-columns:36px 1fr;
+        gap:10px;
+        padding:13px 0;
+      }
+
+      .success-row .icon{
+        font-size:24px;
+      }
+
+      .success-back{
+        font-size:19px;
+        padding:18px;
+      }
+
+      .redirect-note{
+        font-size:15px;
+        margin-top:20px;
+      }
+
+      .about-page{
+        border:none;
+        margin:0;
+        padding:24px 18px 36px;
+      }
+
+      .about-page h2{
+        font-size:28px;
+      }
+
+      .about-page h3{
+        font-size:20px;
+      }
+
+      .about-page p{
+        font-size:15px;
+      }
+
+      .about-row{
+        grid-template-columns:1fr;
+      }
+    }
+"""
+html = html.replace("</style>", mobile_final_css + "\n  </style>")
+
+# Add mobile topbar after body if not exists
+if '<div class="mobile-topbar">' not in html:
+    html = html.replace(
+        "<body>",
+        '<body>\n<div class="mobile-topbar"><div class="mobile-brand">Snack Tracker</div><button id="mobileMenuBtn">☰</button></div>'
+    )
+
+# Add mobile menu JS before renderMachineSelect or before setInterval fallback
+mobile_js = r"""
+document.getElementById("mobileMenuBtn").addEventListener("click", () => {
+  document.querySelector(".sidebar").classList.toggle("mobile-open");
+});
+
+document.querySelectorAll(".nav button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    if(window.innerWidth <= 760){
+      document.querySelector(".sidebar").classList.remove("mobile-open");
+    }
+  });
+});
+
+"""
+if 'mobileMenuBtn").addEventListener' not in html:
+    html = html.replace("renderMachineSelect();", mobile_js + "\nrenderMachineSelect();")
+
+# Shorten redirect note text if exists
+html = html.replace(
+    'You will be redirected to the dashboard.<br>\n            If not, click the button above.',
+    'Returning to Dashboard...<br>\n            If not, click the button above.'
+)
+
+out = Path("/mnt/data/snack_tracker_final_mobile_optimized.html")
+out.write_text(html, encoding="utf-8")
+print(f"Created: {out}")
